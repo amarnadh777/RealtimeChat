@@ -17,7 +17,7 @@ function App() {
 <Routes>
 
   <Route  path='/signup'  element={<SignUpPage/>} />
-  <Route  path='/signin'  element={<LoginPage/>} />
+  <Route  path='/'  element={<LoginPage/>} />
   <Route   path='/home' element={<Chatpage/>}  />
 
   <Route path="*" element={<Nopage></Nopage>} />
