@@ -11,36 +11,29 @@ function Chatwindow() {
   const [text, setText] = useState("");
   const messagesEndRef = useRef(null);
 
+
+
+  const socket = io("http://localhost:3000");
   
   useEffect(() => {
     const fetchMessages = async () => {
 
-      const socket = io("http://localhost:3000",
-        {
-          query:{
-            userId:userData._id
-          }
-        }
-        
-      ); 
-      
-      const Onlieusers = {};
-      
-      socket.on("onlinePeoples",(userIds) =>
-      {
-        
-         console.log("online....",userIds)
-      })
 
-
+      
+     socket.emit("register",userData._id)
+     
       const response = await getMessages({
         senderId: userData._id,
         receiverId: selectedUserData._id,
       });
-
+      socket.on("receive",(data) =>
+      {
+            console.log(data,"socke t ttt")
+            setMessages((prevMessages) => [...prevMessages, data]); 
+      })
       setMessages(response);
     };
-
+     
     fetchMessages();
   }, [selectedUserData]);
 
@@ -59,8 +52,12 @@ function Chatwindow() {
         receiverId: selectedUserData._id,
         message: text,
       });
-
+     
+      
+       socket.emit("send",response)
       setMessages((prevMessages) => [...prevMessages, response]); 
+   
+
       setText(""); 
     } catch (error) {
       console.error("Error sending message:", error);

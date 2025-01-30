@@ -1,3 +1,4 @@
+const { getSocketIdbyUserId } = require("../lib/socket");
 const messageModel = require("../models/messageModel");
 const userModel = require("../models/userModel");
 const getMessageBtw = async (req, res) => {
@@ -29,7 +30,7 @@ const sendMessage = async (req, res) => {
     }
 
     const sender = await userModel.findById(senderId);
-    console.log(sender);
+  
 
     if (!sender) {
       return res.status(404).json({ message: "Sender not found" });
@@ -44,6 +45,8 @@ const sendMessage = async (req, res) => {
       message,
     });
     await newMessage.save();
+
+  
     res.json(newMessage);
   } catch (error) {
     console.log(error.message);
