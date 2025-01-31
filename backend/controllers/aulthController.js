@@ -1,42 +1,45 @@
 
 const userModel = require('../models/userModel');
-const bycrpt = require('bcryptjs')
+const  bcrypt = require('bcryptjs')
 
-const signup = async(req,res) =>
-{
-    const { fullName, email, password } = req.body;
-   
-    try {
-        
-        if (!fullName || !email || !password) {
-            return res.status(400).json({ message: "All fields are required" });
-          }
-          if (password.length < 6) {
-            return res.status(400).json({ message: "Password must be at least 6 characters" });
-          }
-        const user = await userModel.findOne({email})
-        if(user)
-        {
-            return res.status(400).json({message:"Email is already exist"})
-        }
-         const salt = await bycrpt.genSalt(10)
-         const hashPassword = await bycrpt.hash(password,salt)
-        const newUser = new userModel({fullName,email,password:hashPassword})
-        await newUser.save();
-  
-        res.status(201).json({
-          _id:user._id,
-            fullName: newUser.fullName,
-            email: newUser.email,
-           
-        
-          });
+const signup = async (req, res) => {
+  const { fullName, email, password } = req.body;
 
-    } catch (error) {
-        
+  try {
+    if (!fullName || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-}
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    const user = await userModel.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: "Email is already in use" });
+    }
+
+
+    const salt = await  bcrypt.genSalt(10);
+    const hashPassword = await  bcrypt.hash(password, salt);
+
+    const newUser = new userModel({ fullName, email, password: hashPassword });
+    await newUser.save();
+
+  
+    res.status(201).json({
+      _id: newUser._id,
+      fullName: newUser.fullName,
+      email: newUser.email,
+    });
+  } catch (error) {
+    console.error("Error during signup:", error);
+    res.status(500).json({ message: "Server error, please try again later" });
+  }
+};
+
+
+
 
 const signIn = async(req,res) =>
 {
@@ -54,7 +57,7 @@ const signIn = async(req,res) =>
         return res.status(400).json({ message: "Invalid credentials" });
       }
   
-      const isPasswordCorrect = await bycrpt.compare(password, user.password);
+      const isPasswordCorrect = await bcrypt.compare(password, user.password);
       if (!isPasswordCorrect) {
         return res.status(400).json({ message: "Invalid credentials" });
       }

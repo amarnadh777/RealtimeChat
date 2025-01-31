@@ -39,6 +39,7 @@ const io = new Server(server, {
 const users = new Map()
 io.on('connection',(socket) =>
   {
+    console.log("user coneected")
    socket.on("register",(userId) =>
   {
    
@@ -47,15 +48,29 @@ io.on('connection',(socket) =>
   })
   socket.on("send",(data) =>
   {
-    const reciverId = data.receiver
-    const senderId  = data.sender
-    console.log(reciverId,senderId)
-    const receiverSocektId = users.get(reciverId)
+  
+    console.log(data)
+    const receiverSocektId = users.get(data.receiver)
+    console.log(users,receiverSocektId,data.receiver)
     if(receiverSocektId)
     {
       socket.to(receiverSocektId).emit("receive",data)
     }
   })
+
+  socket.on("disconnect" ,() =>
+{
+
+  for (let [userId, socketId] of users) {
+    if (socketId === socket.id) {
+      users.delete(userId);
+      console.log(`User ${userId} disconnected and removed from the Map`);
+      break;
+    }
+  }
+})
+
+  
   
   })
 
