@@ -8,11 +8,11 @@ function Chatpage() {
  
   return (
         <div className='h-screen flex'> 
-        <div className= ' hidden md:block '>
+      
 
         <SIdebar/>
         
-        </div>
+        
 
         <div className='w-full flex-1'>
         <Chatwindow/>

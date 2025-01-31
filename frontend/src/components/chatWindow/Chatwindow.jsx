@@ -51,7 +51,7 @@ function Chatwindow() {
         sender: userData._id,
         receiver: selectedUserData._id,
         message: text,
-        createdAt:"2025-01-31T06:25:13.243Z"
+        createdAt:new Date().toISOString()
       }]);
    
 
@@ -59,7 +59,7 @@ function Chatwindow() {
         sender: userData._id,
         receiver: selectedUserData._id,
         message: text,
-        createdAt:"2025-01-31T06:25:13.243Z"
+        createdAt : new Date().toISOString()
       });
 
       const response = await sendMessage({
@@ -77,7 +77,7 @@ function Chatwindow() {
   // Show placeholder message when no user is selected
   if (!selectedUserData) {
     return (
-      <div className="bg-blue-300 min-h-screen w-full flex items-center justify-center">
+      <div className="bg-blue-300 min-h-screen w-full flex items-center justify-center ">
         <h2 className="text-black font-semibold text-xl">
           Please select a user for chatting...
         </h2>
@@ -87,11 +87,9 @@ function Chatwindow() {
 
   return (
     <div className="bg-blue-300 min-h-screen w-full">
-      <div className="w-full flex bg-white py-2 px-2">
+<div className="w-full flex bg-white py-2 px-10 sm:px-2">
         <div className="flex items-center">
-          <div className="block md:hidden">
-            <FaArrowLeft className="text-black hover:text-gray-400" />
-          </div>
+      
           <div className="size-10 bg-black rounded-full mx-5"></div>
           <div>
             <p className="font-bold">{selectedUserData?.fullName || "User"}</p>
