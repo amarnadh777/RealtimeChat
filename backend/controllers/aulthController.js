@@ -14,19 +14,18 @@ const signup = async (req, res) => {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
+    // 🔴 FIXED: Return 409 Conflict for duplicate emails
     const user = await userModel.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: "Email is already in use" });
+      return res.status(409).json({ message: "Email is already in use" });
     }
 
-
-    const salt = await  bcrypt.genSalt(10);
-    const hashPassword = await  bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
 
     const newUser = new userModel({ fullName, email, password: hashPassword });
     await newUser.save();
 
-  
     res.status(201).json({
       _id: newUser._id,
       fullName: newUser.fullName,
@@ -37,10 +36,6 @@ const signup = async (req, res) => {
     res.status(500).json({ message: "Server error, please try again later" });
   }
 };
-
-
-
-
 const signIn = async(req,res) =>
 {
     

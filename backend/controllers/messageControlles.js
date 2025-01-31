@@ -23,25 +23,25 @@ const getMessageBtw = async (req, res) => {
   } catch (error) {}
 };
 const sendMessage = async (req, res) => {
-  const { senderId, receiverId, message } = req.body;
+  const { sender, receiver, message } = req.body;
   try {
-    if (!senderId || !receiverId || !message) {
+    if (!sender || !receiver || !message) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const sender = await userModel.findById(senderId);
+    const sender = await userModel.findById(sender);
   
 
     if (!sender) {
       return res.status(404).json({ message: "Sender not found" });
     }
-    const receiver = await userModel.findById(receiverId);
+    const receiver = await userModel.findById(receiver);
     if (!receiver) {
       return res.status(404).json({ message: "Receiver not found" });
     }
     const newMessage = new messageModel({
-      sender: senderId,
-      receiver: receiverId,
+      sender: sender,
+      receiver: receiver,
       message,
     });
     await newMessage.save();
