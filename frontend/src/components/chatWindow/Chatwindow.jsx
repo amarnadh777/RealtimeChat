@@ -53,17 +53,19 @@ function Chatwindow() {
         message: text,
         createdAt:"2025-01-31T06:25:13.243Z"
       }]);
-      // const response = await sendMessage({
-      //   sender: userData._id,
-      //   receiver: selectedUserData._id,
-      //   message: text,
-      // });
+   
 
       socket.emit("send",{
         sender: userData._id,
         receiver: selectedUserData._id,
         message: text,
         createdAt:"2025-01-31T06:25:13.243Z"
+      });
+
+      const response = await sendMessage({
+        sender: userData._id,
+        receiver: selectedUserData._id,
+        message: text,
       });
      
       setText("");

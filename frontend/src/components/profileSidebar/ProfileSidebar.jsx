@@ -2,8 +2,10 @@ import React, { useContext, useState } from 'react';
 import { FaBars, FaTimes } from 'react-icons/fa'; // Import icons for hamburger and close buttons
 import { GiHamburgerMenu } from "react-icons/gi";
 import { UserContext } from '../../context/UserContext';
+import { useNavigate } from 'react-router-dom';
+
 function ProfileSidebar() {
-  const {userData}  = useContext(UserContext)
+  const {userData,logout}  = useContext(UserContext)
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -13,7 +15,7 @@ function ProfileSidebar() {
   const closeSidebar = () => {
     setIsOpen(false);
   };
-
+ const navigate = useNavigate()
   return (
     <div>
       {/* Hamburger Button to toggle sidebar */}
@@ -49,7 +51,12 @@ function ProfileSidebar() {
         </div>
         <ul className="mt-4">
           <li>Edit profile</li>
-          <li>Logout</li>
+          <li onClick={() =>{
+                navigate("/")
+            logout()
+        
+            
+          }} >Logout</li>
         </ul>
       </div>
     </div>

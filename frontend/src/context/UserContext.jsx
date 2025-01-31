@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 
 export const UserContext = createContext();
@@ -7,6 +8,7 @@ const UserProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [selectedUserData, setSelectedUserData] = useState(null);
   const [socket, setSocket] = useState(null);
+
 
   useEffect(() => {
     const storedUser = localStorage.getItem("userData");
