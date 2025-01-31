@@ -12,6 +12,7 @@ export const signin =async(data) =>
 {
     try {
         const response = await apiInstance.post("/auth/signin",data)
+        console.log("dsfdsf",data)
         return response.data
 
         
