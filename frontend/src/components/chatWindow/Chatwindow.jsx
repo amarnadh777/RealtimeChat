@@ -46,6 +46,13 @@ function Chatwindow() {
     if (!text.trim()) return;
 
     try {
+
+      setMessages((prevMessages) => [...prevMessages, {
+        senderId: userData._id,
+        receiverId: selectedUserData._id,
+        message: text,
+        createdAt:"2025-01-31T06:25:13.243Z"
+      }]);
       const response = await sendMessage({
         senderId: userData._id,
         receiverId: selectedUserData._id,
@@ -53,7 +60,7 @@ function Chatwindow() {
       });
 
       socket.emit("send",response);
-      setMessages((prevMessages) => [...prevMessages, response]);
+     
       setText("");
     } catch (error) {
       console.error("Error sending message:", error);
