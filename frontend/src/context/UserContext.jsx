@@ -1,12 +1,13 @@
 import React, { createContext, useState, useEffect } from "react";
+import { io } from "socket.io-client";
 
 export const UserContext = createContext();
 
 const UserProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [selectedUserData, setSelectedUserData] = useState(null);
+  const [socket, setSocket] = useState(null);
 
-  // Load user from localStorage (Persist session)
   useEffect(() => {
     const storedUser = localStorage.getItem("userData");
     if (storedUser) {
@@ -14,25 +15,34 @@ const UserProvider = ({ children }) => {
     }
   }, []);
 
-  // Function to store selected chat user
+  useEffect(() => {
+    if (userData) {
+      const newSocket = io(import.meta.env.VITE_BASE_URL);
+      newSocket.emit("register", userData._id);
+      setSocket(newSocket);
+
+      return () => newSocket.disconnect(); 
+    }
+  }, [userData]);
+
   const selectedUser = (userData) => {
     setSelectedUserData(userData);
   };
 
-  // Function to log in user and store data in localStorage
   const login = (userData) => {
     setUserData(userData);
-    localStorage.setItem("userData", JSON.stringify(userData)); // Persist user session
+    localStorage.setItem("userData", JSON.stringify(userData));
   };
 
-  // Function to log out user and clear session
   const logout = () => {
-    setUserData(null); // Corrected from setUser(null)
-    localStorage.removeItem("userData"); // Corrected from "user"
+    setUserData(null);
+    localStorage.removeItem("userData");
+    if (socket) socket.disconnect();
+    setSocket(null);
   };
 
   return (
-    <UserContext.Provider value={{ userData, login, logout, selectedUserData, selectedUser }}>
+    <UserContext.Provider value={{ userData, login, logout, selectedUserData, selectedUser, socket }}>
       {children}
     </UserContext.Provider>
   );

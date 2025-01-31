@@ -4,40 +4,37 @@ import MessageInput from "./MessageInput";
 import { FaArrowLeft } from "react-icons/fa";
 import { UserContext } from "../../context/UserContext";
 import { getMessages, sendMessage } from "../../api/userApis";
-import { io } from "socket.io-client";
+
 function Chatwindow() {
-  const { selectedUserData, userData } = useContext(UserContext);
+  const { selectedUserData, userData, socket } = useContext(UserContext);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const messagesEndRef = useRef(null);
 
-
-
-  const socket = io("http://localhost:3000");
-  
   useEffect(() => {
+    if (!selectedUserData || !socket) return;
 
-    if (!selectedUserData) return;
     const fetchMessages = async () => {
-
-
-      
-     socket.emit("register",userData._id)
-     
       const response = await getMessages({
         senderId: userData._id,
         receiverId: selectedUserData._id,
       });
-      socket.on("receive",(data) =>
-      {
-            console.log(data,"socke t ttt")
-            setMessages((prevMessages) => [...prevMessages, data]); 
-      })
+
       setMessages(response);
     };
-     
+
     fetchMessages();
-  }, [selectedUserData]);
+
+    // Listen for incoming messages
+    socket.on("receive", (data) => {
+    
+      setMessages((prevMessages) => [...prevMessages, data]);
+    });
+
+    return () => {
+      socket.off("receive"); // Cleanup listener when component unmounts
+    };
+  }, [selectedUserData, socket]);
 
   // Auto-scroll when messages update
   useEffect(() => {
@@ -46,7 +43,7 @@ function Chatwindow() {
 
   // Send a message
   const onSend = async () => {
-    if (!text.trim()) return; 
+    if (!text.trim()) return;
 
     try {
       const response = await sendMessage({
@@ -54,32 +51,28 @@ function Chatwindow() {
         receiverId: selectedUserData._id,
         message: text,
       });
-     
-      
-       socket.emit("send",response)
-      setMessages((prevMessages) => [...prevMessages, response]); 
-   
 
-      setText(""); 
+      socket.emit("send",response);
+      setMessages((prevMessages) => [...prevMessages, response]);
+      setText("");
     } catch (error) {
       console.error("Error sending message:", error);
     }
   };
-if(!selectedUserData)
-{
-  return(
-    <div>
 
-<div className="bg-blue-300 min-h-screen w-full flex items-center justify-center">
-  
-  <h2 className="text-black font-semibold text-xl">Please select a user for chatting....</h2>
-</div>
-    </div>
-  )
-}
+  // Show placeholder message when no user is selected
+  if (!selectedUserData) {
+    return (
+      <div className="bg-blue-300 min-h-screen w-full flex items-center justify-center">
+        <h2 className="text-black font-semibold text-xl">
+          Please select a user for chatting...
+        </h2>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-blue-300 min-h-screen w-full">
-  
       <div className="w-full flex bg-white py-2 px-2">
         <div className="flex items-center">
           <div className="block md:hidden">
@@ -87,9 +80,7 @@ if(!selectedUserData)
           </div>
           <div className="size-10 bg-black rounded-full mx-5"></div>
           <div>
-            <p className="font-bold">
-              {selectedUserData?.fullName || "User"}
-            </p>
+            <p className="font-bold">{selectedUserData?.fullName || "User"}</p>
             <p className="text-gray-300">Last Seen 5 min ago</p>
           </div>
         </div>
@@ -97,29 +88,23 @@ if(!selectedUserData)
 
       {/* Messages List */}
       <div
-        className="flex flex-col gap-4  p-10 max-h-[80vh] overflow-y-scroll
+        className="flex flex-col gap-4 p-10 max-h-[80vh] overflow-y-scroll
         [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full
         [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full
         [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700
         dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
       >
         {messages.map((each, index) => (
-
-             <div >
-             <Message key={index} data={each}  message={each.message} />
-
-             </div>
-        
-         
+          <div key={index}>
+            <Message data={each} message={each.message} />
+          </div>
         ))}
 
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="  flex items-center justify-center">
-
-      <MessageInput onSend={onSend} onChange={(e) => setText(e.target.value)} value={text} />
-
+      <div className="flex items-center justify-center">
+        <MessageInput onSend={onSend} onChange={(e) => setText(e.target.value)} value={text} />
       </div>
     </div>
   );

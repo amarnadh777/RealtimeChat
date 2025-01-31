@@ -1,6 +1,5 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import apiClient from '../api/apiClient';
 import { signin } from '../../api/userApis';
 import { UserContext } from '../../context/UserContext';
 
@@ -10,25 +9,22 @@ const LoginPage = () => {
     password: '',
   });
  
-  const {login}  = useContext(UserContext)
+  const { login } = useContext(UserContext);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    // Basic validation
     if (!formData.email || !formData.password) {
       setError('Both email and password are required.');
       setLoading(false);
@@ -36,15 +32,16 @@ const LoginPage = () => {
     }
 
     try {
-   
-      const response = await signin(formData)
-      console.log(response)
-     login(response)
+      const response = await signin(formData);
       
-    
-      
-  
-      navigate('/');
+      console.log(response);
+
+      if (response) {
+        login(response);
+        navigate('/');
+      } else {
+        setError('Login failed. Please check your credentials.');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');
     } finally {
