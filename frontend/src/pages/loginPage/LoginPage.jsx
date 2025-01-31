@@ -44,7 +44,7 @@ const LoginPage = () => {
     
       
   
-      navigate('/home'); // Redirect to dashboard page after login
+      navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');
     } finally {

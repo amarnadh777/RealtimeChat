@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useId } from 'react'
+
 const apiInstance = axios.create({
     baseURL:'http://localhost:3000',
     
@@ -27,9 +27,15 @@ export const signin =async(data) =>
 export const getUserList = async(userId) =>
 {
     try {
-        const response =  await apiInstance.post("/user/getusers",{ loggedInUserId:'67990e8d27b647a4a5e6ca98'})
 
-        return response.data
+        if(userId)
+        {
+
+            const response =  await apiInstance.post("/user/getusers",{ loggedInUserId:userId})
+
+            return response.data
+        }
+      
     } catch (error) {
         console.log(error)
         

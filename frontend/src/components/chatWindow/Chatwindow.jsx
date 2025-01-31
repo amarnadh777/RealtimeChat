@@ -16,6 +16,8 @@ function Chatwindow() {
   const socket = io("http://localhost:3000");
   
   useEffect(() => {
+
+    if (!selectedUserData) return;
     const fetchMessages = async () => {
 
 
@@ -63,7 +65,18 @@ function Chatwindow() {
       console.error("Error sending message:", error);
     }
   };
+if(!selectedUserData)
+{
+  return(
+    <div>
 
+<div className="bg-blue-300 min-h-screen w-full flex items-center justify-center">
+  
+  <h2 className="text-black font-semibold text-xl">Please select a user for chatting....</h2>
+</div>
+    </div>
+  )
+}
   return (
     <div className="bg-blue-300 min-h-screen w-full">
   

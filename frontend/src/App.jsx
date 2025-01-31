@@ -7,6 +7,7 @@ import SignUpPage from './pages/signUpPage/SignUpPage'
 import LoginPage from './pages/loginPage/LoginPage'
 import Nopage from './pages/noPage/Nopage'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Protectedroutes from './routes/Protectedroutes'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -17,8 +18,9 @@ function App() {
 <Routes>
 
   <Route  path='/signup'  element={<SignUpPage/>} />
-  <Route  path='/'  element={<LoginPage/>} />
-  <Route   path='/home' element={<Chatpage/>}  />
+ <Route path='/signin' element={<LoginPage/>}/>
+
+  <Route   path='/' element={  <Protectedroutes> <Chatpage/>   </Protectedroutes>   }  />
 
   <Route path="*" element={<Nopage></Nopage>} />
 </Routes>

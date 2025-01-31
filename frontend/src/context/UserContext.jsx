@@ -1,14 +1,12 @@
 import React, { createContext, useState, useEffect } from "react";
 
-
 export const UserContext = createContext();
 
 const UserProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
-  const [ selectedUserData, setSelectedUserData ] = useState(null);
+  const [selectedUserData, setSelectedUserData] = useState(null);
 
-
-  // Load user from localStorage (Persisting session)
+  // Load user from localStorage (Persist session)
   useEffect(() => {
     const storedUser = localStorage.getItem("userData");
     if (storedUser) {
@@ -16,32 +14,25 @@ const UserProvider = ({ children }) => {
     }
   }, []);
 
-  // // Function to store user data
-  // const saveUser = (userData) => {
-  //   setUserData(userData);
-  //   localStorage.setItem("userData", JSON.stringify(userData)); // Persist user session
-  // };
-    
-   const selectedUser = (userData) =>
-   {
-      setSelectedUserData(userData)
-
-   }
-
-
-    const login = (userData) => {
-    setUserData(userData);
-    localStorage.setItem('userData', JSON.stringify(userData)); // Save to localStorage (optional)
+  // Function to store selected chat user
+  const selectedUser = (userData) => {
+    setSelectedUserData(userData);
   };
-  
-  // Function to logout user
+
+  // Function to log in user and store data in localStorage
+  const login = (userData) => {
+    setUserData(userData);
+    localStorage.setItem("userData", JSON.stringify(userData)); // Persist user session
+  };
+
+  // Function to log out user and clear session
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user"); // Remove session
+    setUserData(null); // Corrected from setUser(null)
+    localStorage.removeItem("userData"); // Corrected from "user"
   };
 
   return (
-    <UserContext.Provider value={{ userData, login, logout ,selectedUserData,selectedUser   }}>
+    <UserContext.Provider value={{ userData, login, logout, selectedUserData, selectedUser }}>
       {children}
     </UserContext.Provider>
   );

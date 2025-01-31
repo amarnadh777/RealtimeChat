@@ -11,7 +11,7 @@ const getUserList = async (req, res) => {
       }
       
   
-      const user = await userModel.find({_id: { $ne:    loggedInUserId}}).select("email fullName")
+      const user = await userModel.find({_id: { $ne:loggedInUserId}}).select("email fullName")
     
       if (!user) {
         return res.status(404).json({ message: "User not found" });

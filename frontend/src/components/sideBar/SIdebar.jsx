@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Searchbar from "./Searchbar";
 import People from "./People";
 import { getUserList } from "../../api/userApis";
 import ProfileSidebar from "../profileSidebar/ProfileSidebar";
+import { UserContext } from "../../context/UserContext";
 
 function SIdebar() {
+  
   const [userList, setUserList] = useState([]);
+  const {userData} = useContext(UserContext)
   useEffect(() => {
     const get = async () => {
      
       try {
-        const response = await getUserList();
+        const response = await getUserList(userData?._id);
      
         setUserList(response);
       } catch (error) {}
