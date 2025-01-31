@@ -25,6 +25,17 @@ export const signin =async(data) =>
 
 }
 
+
+export const signup = async (data) => {
+    try {
+      const response = await apiInstance.post("/auth/signup", data);
+      return response.data;
+    } catch (error) {
+      console.error("Signup error:", error.response?.data?.message);
+      throw error.response?.data || { message: "Something went wrong" };
+    }
+  };
+
 export const getUserList = async(userId) =>
 {
     try {
@@ -62,7 +73,7 @@ export const sendMessage = async(data) =>
     {
     
         try {
-            const response =  await apiInstance.post("/message/send",{senderId:data.senderId,receiverId:data.receiverId,message:data.message})
+            const response =  await apiInstance.post("/message/send",{sender:data.sender,receiver:data.receiver,message:data.message})
             
     
             return response.data

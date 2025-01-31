@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { signin } from '../../api/userApis';
 import { UserContext } from '../../context/UserContext';
 
@@ -99,6 +99,8 @@ const LoginPage = () => {
             {loading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
+
+        <p className='mt-5 text-sm'>Dont have account <Link to="/signup">  <span className=' underline  hover:text-gray-500'> sign up </span>   </Link> </p>
       </div>
     </div>
   );

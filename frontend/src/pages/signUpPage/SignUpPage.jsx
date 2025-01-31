@@ -1,58 +1,53 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { signup } from '../../api/userApis';
 // import apiClient from '../api/apiClient';
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
     email: '',
     password: '',
-    confirmPassword: '', // Add confirm password field
+    confirmPassword: '', 
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate()
 
 
-
-  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
-    // Basic form validation
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('All fields are required.');
+  
+    if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError("All fields are required.");
       setLoading(false);
       return;
     }
-
-    // Password validation
+  
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
+      setError("Passwords do not match.");
       setLoading(false);
       return;
     }
-
+  
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+      setError("Password must be at least 6 characters long.");
       setLoading(false);
       return;
     }
-
+  
     try {
-      // Uncomment the following to make the API call
-      // await apiClient.post('/auth/signup', formData);
-      alert('Signup successful!');
-      navigate('/login'); // Redirect to login page after signup
+      await signup(formData);
+      navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong');
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -74,9 +69,9 @@ const SignupPage = () => {
             </label>
             <input
               type="text"
-              name="name"
+              name="fullName"
               id="name"
-              value={formData.name}
+              value={formData.fullName}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 mt-2 text-gray-700 bg-gray-200 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none"
@@ -140,7 +135,7 @@ const SignupPage = () => {
             {loading ? 'Signing up...' : 'Sign Up'}
           </button>
         </form>
-        <p className=' mt-2 text-gray-600'>Already have an account?  <span className='text-black hover:text-gray-500'>Sign in </span> </p> 
+        <p className=' mt-2 text-gray-600'>Already have an account?  <Link to="/signin">   <span className='text-black hover:text-gray-500'>Sign in </span> </Link> </p> 
       </div>
    
     </div>

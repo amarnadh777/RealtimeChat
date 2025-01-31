@@ -34,7 +34,7 @@ function Chatwindow() {
     return () => {
       socket.off("receive"); // Cleanup listener when component unmounts
     };
-  }, [selectedUserData, socket]);
+  }, [selectedUserData]);
 
   // Auto-scroll when messages update
   useEffect(() => {
@@ -48,18 +48,23 @@ function Chatwindow() {
     try {
 
       setMessages((prevMessages) => [...prevMessages, {
-        senderId: userData._id,
-        receiverId: selectedUserData._id,
+        sender: userData._id,
+        receiver: selectedUserData._id,
         message: text,
         createdAt:"2025-01-31T06:25:13.243Z"
       }]);
-      const response = await sendMessage({
-        senderId: userData._id,
-        receiverId: selectedUserData._id,
-        message: text,
-      });
+      // const response = await sendMessage({
+      //   sender: userData._id,
+      //   receiver: selectedUserData._id,
+      //   message: text,
+      // });
 
-      socket.emit("send",response);
+      socket.emit("send",{
+        sender: userData._id,
+        receiver: selectedUserData._id,
+        message: text,
+        createdAt:"2025-01-31T06:25:13.243Z"
+      });
      
       setText("");
     } catch (error) {
