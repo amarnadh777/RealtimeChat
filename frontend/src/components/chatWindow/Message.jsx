@@ -14,20 +14,28 @@ const formattedTime = date.toLocaleTimeString("en-US", {
  
   
   const isSender = data.sender === userData._id;
+ 
+  
 
-  return (
-    <div className={`flex ${isSender ? "justify-start" : "justify-end"}`}>
+  return (<>
+
+ 
+   <div className={`flex ${isSender ? "justify-start" : "justify-end"}`}>
       <div
         className={`px-3 py-2 max-w-xs rounded-lg text-black ${
           isSender ? "bg-green-500" :  "bg-white"
         }`}
       >
-        {message}
+
+        {data.image ?  (  <> <img src={data.image} /> </> ) :       ( message )}
+    
         <div className="flex justify-end">
           <p className="text-sm text-gray-600">{formattedTime}</p>
         </div>
       </div>
     </div>
+  </>
+   
   );
 }
 

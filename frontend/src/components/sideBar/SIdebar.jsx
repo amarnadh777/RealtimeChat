@@ -10,8 +10,10 @@ import { GiHamburgerMenu } from "react-icons/gi";
 function SIdebar() {
   
   const [userList, setUserList] = useState([]);
-  const {userData} = useContext(UserContext)
+  const {userData,socket} = useContext(UserContext)
   const [isOpen, setIsOpen] = useState(false);
+  const [onlinePeoples,setOnlinePeoples] = useState([])
+
   useEffect(() => {
     const get = async () => {
      
@@ -19,6 +21,13 @@ function SIdebar() {
         const response = await getUserList(userData?._id);
      
         setUserList(response);
+       
+        socket.on("onlineUsers",(data) =>
+        
+        {
+          setOnlinePeoples(data)
+         
+        })
       } catch (error) {}
     };
     get();
@@ -32,10 +41,10 @@ function SIdebar() {
       >
         <GiHamburgerMenu size={24} />
       </button>
-    <div className={`fixed h-screen bg-white min-h-screen  ${
-          isOpen ? "translate-x-0" : "-translate-x-64"
-        } ease-out  md:relative md:translate-x-0 md:w-80`}>
-      {console.log(isOpen)}
+    <div className={`fixed h-screen bg-white min-h-screen hidden md:block  ${
+          isOpen ? "translate-x-0" : "sm:block"
+        }  md:relative md:translate-x-0 md:w-80  `}>
+     
       
       <div className="flex space-x-1 items-center pl-2">
         <ProfileSidebar />
@@ -55,8 +64,9 @@ function SIdebar() {
         dark:[&::-webkit-scrollbar-track]:bg-neutral-700
         dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500  "
         >
-        {userList.map((each) => {
-          return <People userData={each} />;
+          {console.log(onlinePeoples)}
+        {userList.map((each,index) => {
+          return <People  isOnline={onlinePeoples.includes(each._id)}    key={index}  userData={each} />;
         })}
       </div>
     </div>

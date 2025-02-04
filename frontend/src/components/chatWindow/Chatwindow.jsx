@@ -1,83 +1,136 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState, useCallback } from "react";
 import Message from "./Message";
 import MessageInput from "./MessageInput";
-import { FaArrowLeft } from "react-icons/fa";
 import { UserContext } from "../../context/UserContext";
 import { getMessages, sendMessage } from "../../api/userApis";
+import axios from "axios";
 
-function Chatwindow() {
+function ChatWindow() {
   const { selectedUserData, userData, socket } = useContext(UserContext);
+  const [typing, setTyping] = useState(false);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
+  const [image, setImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
-  useEffect(() => {
-    if (!selectedUserData || !socket) return;
-
-    const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
+    if (!selectedUserData) return;
+    setLoading(true);
+    try {
       const response = await getMessages({
         senderId: userData._id,
         receiverId: selectedUserData._id,
       });
-
       setMessages(response);
-    };
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedUserData, userData._id]);
+
+  useEffect(() => {
+    if (!selectedUserData || !socket) return;
 
     fetchMessages();
+    socket.emit("register", userData._id);
 
-    // Listen for incoming messages
-    socket.on("receive", (data) => {
-    
+    const handleReceiveMessage = (data) => {
       setMessages((prevMessages) => [...prevMessages, data]);
-    });
+    };
+
+    const handleTyping = (data) => {
+      if (data.sender === selectedUserData._id) {
+        setTyping(true);
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => setTyping(false), 2000);
+      }
+    };
+
+    const handleOnlineUsers = (users) => {
+      setOnlineUsers(users);
+    };
+
+    socket.on("receive", handleReceiveMessage);
+    socket.on("typing", handleTyping);
+    socket.on("onlineUsers", handleOnlineUsers);
 
     return () => {
-      socket.off("receive"); // Cleanup listener when component unmounts
+      socket.off("receive", handleReceiveMessage);
+      socket.off("typing", handleTyping);
+      socket.off("onlineUsers", handleOnlineUsers);
     };
-  }, [selectedUserData]);
+  }, [selectedUserData, socket, fetchMessages]);
 
-  // Auto-scroll when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Send a message
+  const handleChange = (e) => {
+    setText(e.target.value);
+    socket.emit("typing", {
+      sender: userData._id,
+      receiver: selectedUserData._id,
+    });
+  };
+
   const onSend = async () => {
-    if (!text.trim()) return;
+    if (!text.trim() && !image) return;
+
+    const formData = new FormData();
+    formData.append("message", text);
+    if (image) formData.append("image", image);
+    formData.append("sender", userData._id);
+    formData.append("receiver", selectedUserData._id);
+
+    const newMessage = {
+      sender: userData._id,
+      receiver: selectedUserData._id,
+      message: text,
+      image: previewImage,
+      createdAt: new Date().toISOString(),
+    };
+
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    socket.emit("send", newMessage);
 
     try {
-
-      setMessages((prevMessages) => [...prevMessages, {
-        sender: userData._id,
-        receiver: selectedUserData._id,
-        message: text,
-        createdAt:new Date().toISOString()
-      }]);
-   
-
-      socket.emit("send",{
-        sender: userData._id,
-        receiver: selectedUserData._id,
-        message: text,
-        createdAt : new Date().toISOString()
-      });
-
-      const response = await sendMessage({
-        sender: userData._id,
-        receiver: selectedUserData._id,
-        message: text,
-      });
-     
-      setText("");
+      await axios.post("http://localhost:3000/message/send", formData);
     } catch (error) {
       console.error("Error sending message:", error);
     }
+
+    setText("");
+    setImage(null);
+    setPreviewImage(null);
   };
 
-  // Show placeholder message when no user is selected
+  const onFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      alert("Please select a valid image file.");
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    setPreviewImage(null);
+  };
+
   if (!selectedUserData) {
     return (
-      <div className="bg-blue-300 min-h-screen w-full flex items-center justify-center ">
+      <div className="bg-blue-300 min-h-screen w-full flex items-center justify-center">
         <h2 className="text-black font-semibold text-xl">
           Please select a user for chatting...
         </h2>
@@ -87,39 +140,29 @@ function Chatwindow() {
 
   return (
     <div className="bg-blue-300 min-h-screen w-full">
-<div className="w-full flex bg-white py-2 px-10 sm:px-2">
+      {/* Header */}
+      <div className="w-full flex bg-white py-2 px-10 sm:px-2">
         <div className="flex items-center">
-      
-          <div className="size-10 bg-black rounded-full mx-5"></div>
+          <img src={selectedUserData?.profileImg} alt="Profile" className="size-10 rounded-full mx-5" />
           <div>
             <p className="font-bold">{selectedUserData?.fullName || "User"}</p>
-            <p className="text-gray-300">Last Seen 5 min ago</p>
+            <p className={onlineUsers.includes(selectedUserData._id) ? "text-green-600 font-bold" : "text-gray-600"}>
+              {onlineUsers.includes(selectedUserData._id) ? "Online" : "Offline"}
+            </p>
+            {typing && <p className="text-green-600">Typing...</p>}
           </div>
         </div>
       </div>
 
-      {/* Messages List */}
-      <div
-        className="flex flex-col gap-4 p-10 max-h-[80vh] overflow-y-scroll
-        [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full
-        [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full
-        [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700
-        dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
-      >
-        {messages.map((each, index) => (
-          <div key={index}>
-            <Message data={each} message={each.message} />
-          </div>
-        ))}
-
+      {/* Messages */}
+      <div className="flex flex-col gap-4 p-10 max-h-[80vh] overflow-y-scroll">
+        {messages.map((each, index) => <Message key={index} data={each} message={each.message} />)}
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="flex items-center justify-center">
-        <MessageInput onSend={onSend} onChange={(e) => setText(e.target.value)} value={text} />
-      </div>
+      <MessageInput onSend={onSend} onChange={handleChange} value={text} onFileChange={onFileChange} previewImage={previewImage} onRemoveImage={handleRemoveImage} />
     </div>
   );
 }
 
-export default Chatwindow;
+export default ChatWindow;

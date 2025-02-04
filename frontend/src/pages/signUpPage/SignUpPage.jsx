@@ -1,53 +1,75 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { signup } from '../../api/userApis';
-// import apiClient from '../api/apiClient';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { signup } from "../../api/userApis";
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '', 
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    profileImg: null,
   });
+
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate()
-
+  const [previewImage, setPreviewImage] = useState(null);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, profileImg: file }));
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-  
+
     if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
       setError("All fields are required.");
       setLoading(false);
       return;
     }
-  
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
       setLoading(false);
       return;
     }
-  
+
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters long.");
       setLoading(false);
       return;
     }
-  
+
     try {
-      await signup(formData);
-      navigate("/");
+      const formDataToSend = new FormData();
+      formDataToSend.append("fullName", formData.fullName);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("password", formData.password);
+
+      if (formData.profileImg) {
+        formDataToSend.append("profileImg", formData.profileImg);
+      }
+
+      // console.log(formDataToSend); // Check what is being sent
+
+      // // Send the formData directly
+      // await signup(formDataToSend);
+
+      // navigate("/signin"); // Navigate to sign-in page after successful signup
     } catch (err) {
-      setError(err.message || "Something went wrong");
+      setError(err.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -58,9 +80,7 @@ const SignupPage = () => {
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
         <h1 className="text-2xl font-semibold text-center text-gray-700">Sign Up</h1>
 
-        {error && (
-          <p className="mt-4 text-sm text-red-600 text-center">{error}</p>
-        )}
+        {error && <p className="mt-4 text-sm text-red-600 text-center">{error}</p>}
 
         <form className="mt-6" onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -125,19 +145,44 @@ const SignupPage = () => {
             />
           </div>
 
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-600" htmlFor="profilePic">
+              Profile Picture
+            </label>
+            <input
+              type="file"
+              name="profileImg"
+              id="profilePic"
+              onChange={handleFileChange}
+              className="w-full px-4 py-2 mt-2 text-gray-700 bg-gray-200 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none"
+            />
+            {previewImage && (
+              <img
+                src={previewImage}
+                alt="Preview"
+                className="mt-2 w-24 h-24 object-cover rounded-full"
+              />
+            )}
+          </div>
+
           <button
             type="submit"
             disabled={loading}
             className={`w-full px-4 py-2 mt-4 text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none ${
-              loading ? 'opacity-50 cursor-not-allowed' : ''
+              loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            {loading ? 'Signing up...' : 'Sign Up'}
+            {loading ? "Signing up..." : "Sign Up"}
           </button>
         </form>
-        <p className=' mt-2 text-gray-600'>Already have an account?  <Link to="/signin">   <span className='text-black hover:text-gray-500'>Sign in </span> </Link> </p> 
+
+        <p className="mt-2 text-gray-600">
+          Already have an account?{" "}
+          <Link to="/signin">
+            <span className="text-black hover:text-gray-500">Sign in</span>
+          </Link>
+        </p>
       </div>
-   
     </div>
   );
 };

@@ -28,6 +28,7 @@ export const signin =async(data) =>
 
 export const signup = async (data) => {
     try {
+     
       const response = await apiInstance.post("/auth/signup", data);
       return response.data;
     } catch (error) {
@@ -71,9 +72,9 @@ export const getMessages = async(data) =>
 
 export const sendMessage = async(data) =>
     {
-    
+     
         try {
-            const response =  await apiInstance.post("/message/send",{sender:data.sender,receiver:data.receiver,message:data.message})
+            const response =  await apiInstance.post("/message/send",data)
             
     
             return response.data

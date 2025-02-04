@@ -10,6 +10,7 @@ const UserProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
 
+
   useEffect(() => {
     const storedUser = localStorage.getItem("userData");
     if (storedUser) {
@@ -22,13 +23,14 @@ const UserProvider = ({ children }) => {
       const newSocket = io(import.meta.env.VITE_BASE_URL);
       newSocket.emit("register", userData._id);
       setSocket(newSocket);
-
+     
       return () => newSocket.disconnect(); 
     }
   }, [userData]);
 
   const selectedUser = (userData) => {
     setSelectedUserData(userData);
+   
   };
 
   const login = (userData) => {
@@ -44,7 +46,7 @@ const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{ userData, login, logout, selectedUserData, selectedUser, socket }}>
+    <UserContext.Provider value={{userData, login, logout, selectedUserData, selectedUser, socket }}>
       {children}
     </UserContext.Provider>
   );
