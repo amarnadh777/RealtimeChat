@@ -1,6 +1,7 @@
 
 const userModel = require('../models/userModel');
 const  bcrypt = require('bcryptjs')
+const cloudinary = require('../config/cloudinary')
 
 const signup = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -22,14 +23,22 @@ const signup = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
+    let profileImg = null
 
-    const newUser = new userModel({ fullName, email, password: hashPassword });
+
+    if(req.file)
+    {
+      const result = await cloudinary.uploader.upload(req.file.path)
+      profileImg = result.secure_url
+    }
+    const newUser = new userModel({ fullName, email, password: hashPassword ,profileImg});
     await newUser.save();
 
     res.status(201).json({
       _id: newUser._id,
       fullName: newUser.fullName,
       email: newUser.email,
+      profileImg
     });
   } catch (error) {
     console.error("Error during signup:", error);

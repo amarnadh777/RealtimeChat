@@ -1,6 +1,7 @@
 const { getSocketIdbyUserId } = require("../lib/socket");
 const messageModel = require("../models/messageModel");
 const userModel = require("../models/userModel");
+const cloudinary = require("../config/cloudinary")
 const getMessageBtw = async (req, res) => {
   const { senderId, receiverId } = req.body;
   
@@ -23,26 +24,40 @@ const getMessageBtw = async (req, res) => {
   } catch (error) {}
 };
 const sendMessage = async (req, res) => {
-  const { sender, receiver, message } = req.body;
+
+
   try {
-    if (!sender || !receiver || !message) {
+
+    const { sender, receiver, message } = req.body;
+    console.log(req.body)
+    console.log(sender, receiver, message)
+    if (!sender || !receiver) {
+      console.log("all fie")
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const sender = await userModel.findById(sender);
+
+    const Issender = await userModel.findById(sender);
   
 
-    if (!sender) {
+    if (!Issender) {
       return res.status(404).json({ message: "Sender not found" });
     }
-    const receiver = await userModel.findById(receiver);
-    if (!receiver) {
+    const Isreceiver = await userModel.findById(receiver);
+    if (!Isreceiver) {
       return res.status(404).json({ message: "Receiver not found" });
+    }
+    let imgUrl = null ; 
+    if(req.file) 
+    {
+      const result = await cloudinary.uploader.upload(req.file.path)
+      image = result.secure_url
     }
     const newMessage = new messageModel({
       sender: sender,
       receiver: receiver,
       message,
+      image
     });
     await newMessage.save();
 
